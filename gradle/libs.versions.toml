@@ -1,0 +1,45 @@
+[versions] # Gradle versions
+shadow = "7.1.2"
+licenser = "0.6.1"
+lombok = "6.5.0.3"
+
+# Lib versions
+gson = "2.10.1"
+guava = "31.1-jre"
+annotations = "24.0.1"
+
+jda = "5.0.0-beta.6"
+webhooks = "0.8.2"
+
+mongo = "4.9.0"
+jedis = "5.0.0-alpha1"
+
+jline = "3.23.0"
+
+[plugins]
+# Gradle plugins
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+licenser = { id = "org.cadixdev.licenser", version.ref = "licenser" }
+lombok = { id = "io.freefair.lombok", version.ref = "lombok" }
+
+[libraries] # Gradle libraries
+
+# serialization
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+# annotations
+annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+
+# condition management
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+
+# discord
+jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
+webhooks = { group = "club.minnced", name = "discord-webhooks", version.ref = "webhooks" }
+
+# database
+mongo = { group = "org.mongodb", name = "mongodb-driver-sync", version.ref = "mongo" }
+jedis = { group = "redis.clients", name = "jedis", version.ref = "jedis" }
+
+# CLI
+jline = { group = "org.jline", name = "jline", version.ref = "jline" }

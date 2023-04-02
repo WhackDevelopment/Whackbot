@@ -1,0 +1,3 @@
+[submodule "whackbot-api/src/main/resources/localization"]
+	path = whackbot-api/src/main/resources/localization
+	url = git@github.com:WhackDevelopment/-Whackbot-Localization.git
