@@ -30,6 +30,20 @@
 package com.whackbot.discord;
 
 import com.whackbot.WhackBot;
+import lombok.Getter;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import org.jetbrains.annotations.NotNull;
+
+import javax.security.auth.login.LoginException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * WhackBot; com.whackbot.discord:Bot
@@ -37,9 +51,66 @@ import com.whackbot.WhackBot;
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
  * @since 01.04.2023
  */
-public class Bot {
+public class Bot extends ListenerAdapter {
+
+    private WhackBot whackBot;
+
+    @Getter
+    private Map<Integer, JDA> shards = new HashMap<>();
+
+    private Thread botThread;
 
     public Bot(WhackBot whackBot) {
+        this.whackBot = whackBot;
+
+        if (botThread != null) {
+            if (!botThread.isInterrupted()) {
+                botThread.interrupt();
+            }
+            botThread = null;
+        }
+        botThread = new Thread(() -> {
+            try {
+                enable();
+            } catch (LoginException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }, "WhackBot-DiscordBot");
+        botThread.start();
+
+    }
+
+    public void enable() throws LoginException, InterruptedException {
+
+        JDABuilder builder = JDABuilder.createDefault(
+                whackBot.getBotConfig().get().getToken(),
+                Arrays.asList(GatewayIntent.values())
+        );
+
+        builder.setLargeThreshold(10000);
+        builder.setChunkingFilter(ChunkingFilter.NONE);
+
+        builder.addEventListeners(this);
+
+        int shards = this.whackBot.getBotConfig().get().getShards();
+        for (int i = 0; i < shards; i++) {
+            JDA shardJDA = builder.useSharding(i, shards).build();
+            shardJDA.getPresence().setActivity(Activity.of(Activity.ActivityType.LISTENING, "Command /help "));
+            this.shards.put(i, shardJDA);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            this.shards.values().forEach(shard -> shard.shutdownNow());
+        }));
+    }
+
+    private void setStatus(Activity activity) {
+        // TODO: ???
+    }
+
+    @Override
+    public void onReady(@NotNull final ReadyEvent event) {
+        WhackBot.info("[Bot Login] successful. User: " + event.getJDA().getSelfUser().getAsTag() + " Shard: " + event.getJDA().getShardInfo().getShardId());
     }
 
 }
