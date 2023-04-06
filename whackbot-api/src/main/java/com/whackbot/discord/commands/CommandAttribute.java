@@ -27,36 +27,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.whackbot.dependencies;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.List;
+package com.whackbot.discord.commands;
 
 /**
- * WhackBot; com.whackbot.dependencies:DependencyInit
+ * WhackBot; com.whackbot.discord.commands:CommandAttribute
  *
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
- * @since 01.04.2023
+ * @since 06.04.2023
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DependencyInit {
+public @interface CommandAttribute {
 
-    @Getter
-    @NotNull
-    private static List<String> dependencies = Arrays.asList(new String[]{
-            "com.google.code.gson:gson:2.10.1",
-            "com.google.guava:guava:31.1-jre",
-            "org.jetbrains:annotations:24.0.1",
-            "org.mongodb:mongodb-driver-sync:4.9.0",
-            "redis.clients:jedis:5.0.0-alpha1",
-            "club.minnced:discord-webhooks:0.8.2",
-            "net.dv8tion:JDA:5.0.0-beta.6",
-            "org.jline:jline:3.23.0",
-    });
+    /**
+     * The key which identifies the attribute.
+     *
+     * @return The key of the command attribute.
+     * @since 1.0-SNAPSHOT
+     */
+    String key();
+
+    /**
+     * The value of the attribute.
+     *
+     * @return The value of the description, could be <code>null</code>.
+     * @since 1.0-SNAPSHOT
+     * Changed to allow for no value present in 1.0-SNAPSHOT
+     */
+    String value() default "";
 
 }

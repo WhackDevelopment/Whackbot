@@ -10,13 +10,13 @@ fun commitHash(): String = try {
 val commit: String? = commitHash()
 
 dependencies {
-    implementation(libs.annotations)
+    compileOnly(libs.annotations)
     annotationProcessor(libs.annotations)
-    implementation(libs.gson)
-    implementation(libs.guava)
-    implementation(libs.jda)
-    implementation(libs.webhooks)
-    implementation(libs.jedis)
-    implementation(libs.mongo)
-    implementation(libs.jline)
+    compileOnly(libs.gson)
+    compileOnly(libs.guava)
+    compileOnly(libs.jda)
+    compileOnly(libs.webhooks)
+    compileOnly(libs.jedis)
+    compileOnly(libs.mongo)
+    compileOnly(libs.jline)
 }

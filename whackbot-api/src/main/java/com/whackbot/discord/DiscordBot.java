@@ -27,36 +27,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.whackbot.dependencies;
+package com.whackbot.discord;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+import com.whackbot.discord.commands.CommandHandler;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
- * WhackBot; com.whackbot.dependencies:DependencyInit
+ * WhackBot; com.whackbot.discord.commands:DiscordBot
  *
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
- * @since 01.04.2023
+ * @since 06.04.2023
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DependencyInit {
+public interface DiscordBot {
 
-    @Getter
-    @NotNull
-    private static List<String> dependencies = Arrays.asList(new String[]{
-            "com.google.code.gson:gson:2.10.1",
-            "com.google.guava:guava:31.1-jre",
-            "org.jetbrains:annotations:24.0.1",
-            "org.mongodb:mongodb-driver-sync:4.9.0",
-            "redis.clients:jedis:5.0.0-alpha1",
-            "club.minnced:discord-webhooks:0.8.2",
-            "net.dv8tion:JDA:5.0.0-beta.6",
-            "org.jline:jline:3.23.0",
-    });
+    String getPrefix();
+
+    ExecutorService executors();
+    CommandHandler getMessageCommandHandler();
+
+    CommandHandler getSlashCommandInteractionCommandHandler();
+
+    CommandHandler getModalInteractionCommandHandler();
+
+    CommandHandler getButtonInteractionCommandHandler();
+
+    CommandHandler getSelectMenuInteractionCommandHandler();
+    CommandHandler getEntitySelectMenuInteractionCommandHandler();
+
+    CommandHandler getMessageContextInteractionCommandHandler();
+
+    CommandHandler getUserContextInteractionCommandHandler();
+
+    CommandHandler getAutoCompleteInteractionCommandHandler();
 
 }

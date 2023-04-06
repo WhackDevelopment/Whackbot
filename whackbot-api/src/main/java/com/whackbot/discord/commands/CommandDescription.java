@@ -27,36 +27,51 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.whackbot.dependencies;
+package com.whackbot.discord.commands;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.List;
+import java.lang.annotation.*;
 
 /**
- * WhackBot; com.whackbot.dependencies:DependencyInit
+ * WhackBot; com.whackbot.discord.commands:CommandDescription
  *
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
- * @since 01.04.2023
+ * @since 06.04.2023
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DependencyInit {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface CommandDescription {
 
-    @Getter
-    @NotNull
-    private static List<String> dependencies = Arrays.asList(new String[]{
-            "com.google.code.gson:gson:2.10.1",
-            "com.google.guava:guava:31.1-jre",
-            "org.jetbrains:annotations:24.0.1",
-            "org.mongodb:mongodb-driver-sync:4.9.0",
-            "redis.clients:jedis:5.0.0-alpha1",
-            "club.minnced:discord-webhooks:0.8.2",
-            "net.dv8tion:JDA:5.0.0-beta.6",
-            "org.jline:jline:3.23.0",
-    });
+    /**
+     * This represents the name of the {@link AbstractCommand} which is annotated with this {@link CommandDescription}
+     *
+     * @return The name of the command, should never be <code>null</code>.
+     * @since 1.0-SNAPSHOT
+     */
+    String name();
+
+    /**
+     * This represents the description of the {@link AbstractCommand} which is annotated with this {@link CommandDescription} has.
+     *
+     * @return The description of the command, default as an empty string.
+     * @since 1.0-SNAPSHOT
+     */
+    String description() default "";
+
+    /**
+     * This represents an array of Strings which could trigger the {@link AbstractCommand} which is annotated with this {@link CommandDescription} has.
+     *
+     * @return An Array of Strings which could trigger the command.
+     * @since 1.0-SNAPSHOT
+     */
+    String[] triggers();
+
+    /**
+     * This represents an Array of {@link CommandAttribute} that the {@link AbstractCommand} which is annotated with this {@link CommandDescription} has.
+     *
+     * @return An array of {@link CommandAttribute}s, will return an empty array if no attributes are used.
+     * @since 1.0-SNAPSHOT
+     */
+    CommandAttribute[] attributes() default {};
 
 }

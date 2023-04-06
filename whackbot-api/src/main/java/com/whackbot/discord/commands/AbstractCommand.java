@@ -27,36 +27,72 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.whackbot.dependencies;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.jetbrains.annotations.NotNull;
+package com.whackbot.discord.commands;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
- * WhackBot; com.whackbot.dependencies:DependencyInit
+ * WhackBot; com.whackbot.discord.commands:AbstractCommand
  *
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
- * @since 01.04.2023
+ * @since 06.04.2023
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DependencyInit {
+public interface AbstractCommand<T> extends Comparable<AbstractCommand<T>> {
 
-    @Getter
-    @NotNull
-    private static List<String> dependencies = Arrays.asList(new String[]{
-            "com.google.code.gson:gson:2.10.1",
-            "com.google.guava:guava:31.1-jre",
-            "org.jetbrains:annotations:24.0.1",
-            "org.mongodb:mongodb-driver-sync:4.9.0",
-            "redis.clients:jedis:5.0.0-alpha1",
-            "club.minnced:discord-webhooks:0.8.2",
-            "net.dv8tion:JDA:5.0.0-beta.6",
-            "org.jline:jline:3.23.0",
-    });
+    /**
+     * Execute this command.
+     *
+     * @param object T is the object that is passed to this command
+     * @param args   The arguments from the command
+     * @since 1.1.3
+     */
+    void execute(T object, String... args);
+
+    /**
+     * Get the {@link CommandDescription} that annotates this {@link AbstractCommand}
+     *
+     * @return The {@link CommandDescription}
+     * @since 1.0-SNAPSHOT
+     */
+    default CommandDescription getDescription() {
+        return getClass().getAnnotation(CommandDescription.class);
+    }
+
+    /**
+     * Return the {@link CommandAttribute}s that are contained within the {@link CommandDescription} annotator
+     *
+     * @return The {@link CommandAttribute}s
+     * @since 1.0-SNAPSHOT
+     */
+    default CommandAttribute[] getAttributes() {
+        return getDescription().attributes();
+    }
+
+    /**
+     * Returns if the {@link CommandDescription} contains a {@link CommandAttribute} with the given key.
+     *
+     * @param key The key to check the {@link CommandAttribute} against.
+     * @return If the relevant {@link CommandAttribute} exists
+     * @since 1.0-SNAPSHOT
+     */
+    default boolean hasAttribute(String key) {
+        return Arrays.stream(getAttributes()).anyMatch(ca -> ca.key().equals(key));
+    }
+
+    /**
+     * Returns the {@link String} that the given {@link CommandAttribute} contains.
+     *
+     * @param key The key to get the {@link CommandAttribute} of.
+     * @return The relevant {@link String}
+     * @since 1.0-SNAPSHOT
+     */
+    default String getAttribute(String key) {
+        return Arrays.stream(getAttributes()).filter(ca -> ca.key().equals(key)).findFirst().map(CommandAttribute::value).orElse(null);
+    }
+
+    @Override
+    default int compareTo(AbstractCommand<T> that) {
+        return this.getDescription().name().compareTo(that.getDescription().name());
+    }
 
 }

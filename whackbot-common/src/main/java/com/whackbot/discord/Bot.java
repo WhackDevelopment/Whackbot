@@ -30,20 +30,32 @@
 package com.whackbot.discord;
 
 import com.whackbot.WhackBot;
+import com.whackbot.discord.commands.CommandEventsHandler;
+import com.whackbot.discord.commands.CommandHandler;
+import com.whackbot.discord.commands.SlasCommandDataGetter;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.interactions.commands.context.MessageContextInteraction;
+import net.dv8tion.jda.api.interactions.commands.context.UserContextInteraction;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
+import net.dv8tion.jda.api.interactions.components.selections.EntitySelectInteraction;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectInteraction;
+import net.dv8tion.jda.api.interactions.modals.ModalInteraction;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * WhackBot; com.whackbot.discord:Bot
@@ -51,17 +63,48 @@ import java.util.Map;
  * @author <a href="https://github.com/LuciferMorningstarDev">LuciferMorningstarDev</a>
  * @since 01.04.2023
  */
-public class Bot extends ListenerAdapter {
+public class Bot extends ListenerAdapter implements DiscordBot {
 
     private WhackBot whackBot;
 
     @Getter
     private Map<Integer, JDA> shards = new HashMap<>();
 
+    @Getter
     private Thread botThread;
+
+    @Getter
+    private ExecutorService executors;
+
+    @Getter
+    private List<SlashCommandData> slashCommands;
+    @Getter
+    private List<SlashCommandData> slashCommandsGlobal;
+    @Getter
+    private CommandHandler<Message> messageCommandHandler;
+    @Getter
+    private CommandHandler<MessageContextInteraction> messageContextInteractionCommandHandler;
+    @Getter
+    private CommandHandler<UserContextInteraction> userContextInteractionCommandHandler;
+    @Getter
+    private CommandHandler<ButtonInteraction> buttonInteractionCommandHandler;
+    @Getter
+    private CommandHandler<ModalInteraction> modalInteractionCommandHandler;
+    @Getter
+    private CommandHandler<StringSelectInteraction> selectMenuInteractionCommandHandler;
+    @Getter
+    private CommandHandler<EntitySelectInteraction> entitySelectMenuInteractionCommandHandler;
+    @Getter
+    private CommandHandler<SlashCommandInteraction> slashCommandInteractionCommandHandler;
+
+    // TODO
+    @Getter
+    private CommandHandler autoCompleteInteractionCommandHandler;
 
     public Bot(WhackBot whackBot) {
         this.whackBot = whackBot;
+        this.executors = Executors.newFixedThreadPool(64);
+        this.registerCommandsAndInteractions();
 
         if (botThread != null) {
             if (!botThread.isInterrupted()) {
@@ -80,6 +123,32 @@ public class Bot extends ListenerAdapter {
 
     }
 
+    private void registerCommandsAndInteractions() {
+        this.slashCommands = new ArrayList<>();
+        this.slashCommandsGlobal = new ArrayList<>();
+
+        this.messageCommandHandler = new CommandHandler<>();
+        this.messageContextInteractionCommandHandler = new CommandHandler<>();
+        this.userContextInteractionCommandHandler = new CommandHandler<>();
+        this.buttonInteractionCommandHandler = new CommandHandler<>();
+        this.modalInteractionCommandHandler = new CommandHandler<>();
+        this.selectMenuInteractionCommandHandler = new CommandHandler<>();
+        this.entitySelectMenuInteractionCommandHandler = new CommandHandler<>();
+        this.slashCommandInteractionCommandHandler = new CommandHandler<>();
+
+        this.slashCommandInteractionCommandHandler.getCommands().forEach(slashCommand -> {
+            if (slashCommand instanceof SlasCommandDataGetter) {
+                SlasCommandDataGetter getter = (SlasCommandDataGetter) slashCommand;
+                if (getter.global()) {
+                    this.slashCommandsGlobal.add(getter.data());
+                } else {
+                    this.slashCommands.add(getter.data());
+                }
+            }
+        });
+
+    }
+
     public void enable() throws LoginException, InterruptedException {
 
         JDABuilder builder = JDABuilder.createDefault(
@@ -91,15 +160,22 @@ public class Bot extends ListenerAdapter {
         builder.setChunkingFilter(ChunkingFilter.NONE);
 
         builder.addEventListeners(this);
+        builder.addEventListeners(new CommandEventsHandler(this));
 
         int shards = this.whackBot.getBotConfig().get().getShards();
         for (int i = 0; i < shards; i++) {
             JDA shardJDA = builder.useSharding(i, shards).build();
             shardJDA.getPresence().setActivity(Activity.of(Activity.ActivityType.LISTENING, "Command /help "));
             this.shards.put(i, shardJDA);
+
+            shardJDA.updateCommands()
+                    .addCommands(slashCommands)
+                    .queue();
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Good Bye :(");
+            executors.shutdownNow();
             this.shards.values().forEach(shard -> shard.shutdownNow());
         }));
     }
@@ -110,7 +186,19 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onReady(@NotNull final ReadyEvent event) {
+        // TODO: add non globals
+
         WhackBot.info("[Bot Login] successful. User: " + event.getJDA().getSelfUser().getAsTag() + " Shard: " + event.getJDA().getShardInfo().getShardId());
     }
 
+
+    @Override
+    public String getPrefix() {
+        return "w!"; // TODO: config
+    }
+
+    @Override
+    public ExecutorService executors() {
+        return executors;
+    }
 }
