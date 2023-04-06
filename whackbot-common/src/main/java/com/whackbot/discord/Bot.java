@@ -33,6 +33,7 @@ import com.whackbot.WhackBot;
 import com.whackbot.discord.commands.CommandEventsHandler;
 import com.whackbot.discord.commands.CommandHandler;
 import com.whackbot.discord.commands.SlasCommandDataGetter;
+import com.whackbot.discord.commands.slash.global.GlobalHelpSlashCommand;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -135,6 +136,8 @@ public class Bot extends ListenerAdapter implements DiscordBot {
         this.selectMenuInteractionCommandHandler = new CommandHandler<>();
         this.entitySelectMenuInteractionCommandHandler = new CommandHandler<>();
         this.slashCommandInteractionCommandHandler = new CommandHandler<>();
+
+        this.slashCommandInteractionCommandHandler.getCommands().add(new GlobalHelpSlashCommand(this));
 
         this.slashCommandInteractionCommandHandler.getCommands().forEach(slashCommand -> {
             if (slashCommand instanceof SlasCommandDataGetter) {
