@@ -172,7 +172,7 @@ public class Bot extends ListenerAdapter implements DiscordBot {
             this.shards.put(i, shardJDA);
 
             shardJDA.updateCommands()
-                    .addCommands(slashCommands)
+                    .addCommands(this.slashCommandsGlobal)
                     .queue();
         }
 
